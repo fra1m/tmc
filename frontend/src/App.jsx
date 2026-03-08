@@ -26,6 +26,50 @@ function formatNumber(value) {
   return new Intl.NumberFormat("ru-RU").format(value ?? 0);
 }
 
+function reorderFlatItems(items, activeId, overId) {
+  const activeIndex = items.findIndex((item) => item.id === activeId);
+  const overIndex = items.findIndex((item) => item.id === overId);
+
+  if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex) {
+    return items;
+  }
+
+  const nextItems = [...items];
+  const [moved] = nextItems.splice(activeIndex, 1);
+  nextItems.splice(overIndex, 0, moved);
+  return nextItems;
+}
+
+function reorderInfiniteItemsData(data, activeId, overId) {
+  if (!data?.pages?.length) {
+    return data;
+  }
+
+  const flatItems = data.pages.flatMap((page) => page.items);
+  const reorderedItems = reorderFlatItems(flatItems, activeId, overId);
+
+  if (reorderedItems === flatItems) {
+    return data;
+  }
+
+  let cursor = 0;
+  const nextPages = data.pages.map((page) => {
+    const pageSize = page.items.length;
+    const pageItems = reorderedItems.slice(cursor, cursor + pageSize);
+    cursor += pageSize;
+
+    return {
+      ...page,
+      items: pageItems
+    };
+  });
+
+  return {
+    ...data,
+    pages: nextPages
+  };
+}
+
 export default function App() {
   const queryClient = useQueryClient();
 
@@ -120,6 +164,17 @@ export default function App() {
         overId,
         query: normalizedRightQuery
       }),
+    onMutate: async ({ activeId, overId }) => {
+      const queryKey = ["right-items", normalizedRightQuery];
+      await queryClient.cancelQueries({ queryKey });
+
+      const previousData = queryClient.getQueryData(queryKey);
+      queryClient.setQueryData(queryKey, (currentData) =>
+        reorderInfiniteItemsData(currentData, activeId, overId)
+      );
+
+      return { queryKey, previousData };
+    },
     onSuccess: async () => {
       setFeedback(null);
 
@@ -129,7 +184,11 @@ export default function App() {
         queryClient.invalidateQueries({ queryKey: ["server-state"] })
       ]);
     },
-    onError: (error) => {
+    onError: (error, _variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(context.queryKey, context.previousData);
+      }
+
       setFeedback({ type: "error", message: getErrorMessage(error) });
     }
   });
