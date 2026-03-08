@@ -6,6 +6,7 @@ import { AddItemForm } from "./components/AddItemForm";
 import { ColumnCard } from "./components/ColumnCard";
 import { LeftList } from "./components/LeftList";
 import { SearchInput } from "./components/SearchInput";
+import { ScrollToTopButton } from "./components/ScrollToTopButton";
 import { SortableSelectedList } from "./components/SortableSelectedList";
 import { useInfiniteScroll } from "./hooks/useInfiniteScroll";
 import { useLeftItems, useRightItems, useServerState } from "./hooks/usePaginatedItems";
@@ -319,6 +320,8 @@ export default function App() {
           />
         </ColumnCard>
       </main>
+
+      <ScrollToTopButton />
     </div>
   );
 }

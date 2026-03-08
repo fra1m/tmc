@@ -256,6 +256,37 @@ body {
   height: 1px;
 }
 
+.scroll-top-button {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #9dbbe4;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1d4e89;
+  box-shadow: 0 8px 20px rgba(22, 60, 112, 0.2);
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 160ms ease, transform 160ms ease;
+  z-index: 20;
+}
+
+.scroll-top-button.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.scroll-top-button:hover {
+  background: #eef5ff;
+}
+
 @media (max-width: 960px) {
   .app-shell {
     padding: 14px;
